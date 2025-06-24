@@ -4,37 +4,42 @@ A morbidly fascinating web application that converts monetary costs into "life t
 
 ## 🎯 What It Does
 
-Transform spending decisions by showing their true cost: **your life time**.
+Transform spending decisions by showing their true cost: **how much you need to work**.
 
-- **£2500 camera** → "This will devour 16.9 days of your mortal existence"
-- **Daily £3 coffee** → "Your addiction steals 7.4 days of life annually"
-- **Netflix subscription** → "This streaming habit costs 2.1 days of life per year"
+- **£500 camera** → "You need to work 29 hours to afford this - 1.2 waking days of your life"
+- **Daily £3 coffee** → "This habit will cost you 547 hours of work - 22.8 waking days of your life"
+- **Netflix subscription** → "You'll work 11 hours to pay for this subscription each year"
 
 ## ✨ Features
 
-- **Personal Life Profile**: Set your birth year, salary, sleep hours, and working hours
-- **Instant Calculations**: See life costs in hours, days, weeks, or months
+- **Personal Life Profile**: Set birth date, salary, sleep hours, and working hours
+- **Work-Based Calculations**: See how many hours of work needed for purchases
+- **Life Impact Perspective**: Convert work hours to days of life for context
 - **Scenario Presets**: Explore common expenses (coffee, Netflix, gym, iPhone, meal deals)
+- **Persistent Profiles**: Your profile saves automatically via cookies
 - **Morbid Messaging**: Impactful, memorable results that make you pause and reconsider
 - **Mobile Responsive**: Dark theme with striking typography
 - **Share Results**: Copy life cost revelations to clipboard
 
 ## 🧮 How It Works
 
-The calculator uses a simple but powerful formula:
+The calculator determines your true hourly earning rate and converts purchases into work time:
 
 ```javascript
-// Monthly waking hours
+// Calculate hourly earning rate based on actual working hours
+const weeklyWorkingHours = userProfile.workingHours || 40;
+const monthlyWorkingHours = weeklyWorkingHours * 4.33; // Average weeks per month
+const hourlyEarningRate = monthlySalary / monthlyWorkingHours;
+
+// Calculate how many hours of work needed for purchase
+const workHoursNeeded = purchaseAmount / hourlyEarningRate;
+
+// Convert to life perspective using waking hours
 const dailyWakingHours = 24 - sleepHours;
-const monthlyWakingHours = dailyWakingHours * 30.44;
-
-// Life value per hour
-const hourlyLifeValue = monthlySalary / monthlyWakingHours;
-
-// Life cost of purchase
-const lifeCostHours = purchaseAmount / hourlyLifeValue;
-const lifeCostDays = lifeCostHours / dailyWakingHours;
+const lifeDaysNeeded = workHoursNeeded / dailyWakingHours;
 ```
+
+**Key Insight**: Shows exactly how many hours you must work to earn enough for a purchase, then puts that in perspective by converting to days of your waking life.
 
 ## 🚀 Development
 
@@ -85,12 +90,14 @@ This project includes VS Code tasks and Copilot instructions. Use:
 
 ## 🎯 MVP Goals
 
-✅ Calculator works with accurate mathematics  
+✅ Calculator works with accurate work-hour based mathematics  
 ✅ Results feel impactful and memorable  
 ✅ Interface is clean and intuitive  
 ✅ Scenario presets provide engaging exploration  
 ✅ Mobile-friendly design  
 ✅ Shareable results functionality  
+✅ Persistent user profiles via cookies  
+✅ Birth date precision and customizable life expectancy  
 
 ## 🔮 Future Enhancements
 

@@ -59,7 +59,12 @@
   function calculateScenarioLifeCost(scenario) {
     const dailyWakingHours = 24 - userProfile.sleepHours
     const monthlyWakingHours = dailyWakingHours * 30.44
-    const hourlyLifeValue = userProfile.monthlySalary / monthlyWakingHours
+    
+    // Calculate hourly earning rate based on actual working hours
+    const weeklyWorkingHours = userProfile.workingHours || 40
+    const monthlyWorkingHours = weeklyWorkingHours * 4.33 // Average weeks per month
+    const hourlyEarningRate = userProfile.monthlySalary / monthlyWorkingHours
+    const hourlyLifeValue = hourlyEarningRate
     
     // Enhanced age calculations using birth date
     const currentAge = calculateAge(userProfile.birthDate)

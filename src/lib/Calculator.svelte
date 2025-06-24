@@ -53,7 +53,14 @@
   // Reactive calculations
   $: dailyWakingHours = 24 - userProfile.sleepHours
   $: monthlyWakingHours = dailyWakingHours * 30.44
-  $: hourlyLifeValue = userProfile.monthlySalary / monthlyWakingHours
+  
+  // Calculate hourly earning rate based on actual working hours
+  $: weeklyWorkingHours = userProfile.workingHours || 40
+  $: monthlyWorkingHours = weeklyWorkingHours * 4.33 // Average weeks per month
+  $: hourlyEarningRate = userProfile.monthlySalary / monthlyWorkingHours
+  
+  // This represents your life value: how much life you spend to earn £1
+  $: hourlyLifeValue = hourlyEarningRate
   
   // Enhanced age calculations using birth date
   $: currentAge = calculateAge(userProfile.birthDate)
@@ -134,26 +141,27 @@
     
     const wakingDays = formatNumber(result.wakingDays, 1)
     const hours = formatNumber(result.hours, 0)
+    const workHours = formatNumber(result.hours, 0) // Hours of work needed
     const percentage = formatNumber(result.remainingLifePercentage, 1)
     const remainingYearsText = remainingYears > 0 ? remainingYears : "remaining"
     
     if (result.isRecurring) {
       const lifetimeMessages = [
-        `This habit will devour ${wakingDays} waking days of your remaining ${remainingYearsText} years`,
-        `Over your remaining lifetime, this costs ${wakingDays} conscious days of existence`,
-        `You're trading ${percentage}% of your remaining waking life for this subscription`,
-        `This recurring expense will consume ${wakingDays} days of conscious time that's left`,
-        `${percentage}% of your remaining conscious existence will be spent on this habit`
+        `This habit will cost you ${workHours} hours of work - ${wakingDays} waking days of your life`,
+        `Over your remaining lifetime, you'll work ${workHours} hours to pay for this`,
+        `You're trading ${percentage}% of your remaining waking life to earn money for this subscription`,
+        `This recurring expense requires ${wakingDays} days of your conscious time to earn`,
+        `${percentage}% of your remaining existence will be spent working to afford this habit`
       ]
       return lifetimeMessages[Math.floor(Math.random() * lifetimeMessages.length)]
     }
     
     const oneTimeMessages = [
-      `This will devour ${wakingDays} waking days of your remaining ${remainingYearsText} years`,
-      `You're sacrificing ${percentage}% of your remaining conscious life for this purchase`,
-      `This costs ${wakingDays} days of your precious remaining waking time`,
-      `${percentage}% of what's left of your conscious existence for this item`,
-      `This brings your conscious death ${wakingDays} waking days closer`
+      `You need to work ${workHours} hours to afford this - ${wakingDays} waking days of your life`,
+      `You're sacrificing ${percentage}% of your remaining life's earning power for this purchase`,
+      `This costs ${workHours} hours of work - ${wakingDays} days of your precious time`,
+      `${percentage}% of what's left of your earning potential for this item`,
+      `You'll spend ${wakingDays} waking days of life earning enough for this`
     ]
     
     return oneTimeMessages[Math.floor(Math.random() * oneTimeMessages.length)]

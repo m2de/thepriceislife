@@ -4,45 +4,49 @@
 
 ## Project Overview
 
-This is "The Price is Life" calculator - a Svelte web application that converts monetary costs into "life time" costs with morbid but playful messaging.
+This is "The Price is Life" calculator - a Svelte web application that converts monetary costs into work time requirements with morbid but playful messaging. Shows users exactly how many hours they need to work to afford purchases.
 
 ## Key Requirements
 
 - **Dark theme** with morbid aesthetic
 - **Mobile-first responsive design**
 - **No backend required** - all calculations client-side
-- **Morbid but playful messaging** for results
+- **Work-focused messaging** that emphasizes time spent working
+- **Life perspective context** to make work hours relatable
 - **Clean, minimal design** with striking typography
 
 ## Core Features
 
-1. **User Input Form**: Birth year, monthly salary, sleep hours, working hours
-2. **Calculator Interface**: Purchase amount input with prominent display
-3. **Results Display**: Multiple morbid message formats
+1. **User Profile Form**: Birth date, monthly salary, sleep hours, working hours
+2. **Calculator Interface**: Purchase amount input with recurring options
+3. **Work-Time Results**: Shows hours of work needed + life context
 4. **Scenario Presets**: 5 clickable preset scenarios (coffee, Netflix, gym, iPhone, meal deals)
-5. **Shareable Results**: Copy to clipboard functionality
+5. **Persistent Profiles**: Automatic cookie-based profile saving
+6. **Shareable Results**: Copy to clipboard functionality
 
 ## Calculation Logic
 
 ```javascript
-// Monthly waking hours
+// Calculate hourly earning rate based on actual working hours
+const weeklyWorkingHours = userProfile.workingHours || 40;
+const monthlyWorkingHours = weeklyWorkingHours * 4.33; // Average weeks per month
+const hourlyEarningRate = monthlySalary / monthlyWorkingHours;
+
+// Calculate work hours needed for purchase
+const workHoursNeeded = purchaseAmount / hourlyEarningRate;
+
+// Convert to life perspective using waking hours
 const dailyWakingHours = 24 - sleepHours;
-const monthlyWakingHours = dailyWakingHours * 30.44;
-
-// Life value per hour
-const hourlyLifeValue = monthlySalary / monthlyWakingHours;
-
-// Life cost of purchase
-const lifeCostHours = purchaseAmount / hourlyLifeValue;
-const lifeCostDays = lifeCostHours / dailyWakingHours;
+const lifeDaysNeeded = workHoursNeeded / dailyWakingHours;
 ```
 
 ## Sample Messaging
 
-- "This will devour X hours of your mortal existence"
-- "You're sacrificing X.X days of life for this purchase"
-- "This brings your death X.X days closer"
-- "Your coffee addiction steals X.X days of life annually"
+- "You need to work X hours to afford this - X.X waking days of your life"
+- "This costs X hours of work - X.X days of your precious time"
+- "You'll work X hours to pay for this subscription"
+- "Over your remaining lifetime, you'll work X hours to pay for this"
+- "This habit will cost you X hours of work - X.X waking days of your life"
 
 ## Technical Preferences
 
