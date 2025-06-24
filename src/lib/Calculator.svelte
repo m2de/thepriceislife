@@ -179,9 +179,11 @@
   function handleClearProfile() {
     if (confirm('Are you sure you want to clear your saved profile? This will reset all your information.')) {
       clearProfile()
-      userProfile = getDefaultProfile()
+      // Trigger reactivity by creating a new object
+      userProfile = { ...getDefaultProfile() }
       showResult = false
       result = null
+      purchaseAmount = ''
     }
   }
 </script>

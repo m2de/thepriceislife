@@ -6,17 +6,21 @@
   
   let userProfile = getDefaultProfile()
   let calculatorRef
+  let profileLoaded = false
+  let profileLoadedFromCookies = false
   
   // Load profile from cookies on mount
   onMount(() => {
     const savedProfile = loadProfile()
     if (savedProfile) {
       userProfile = mergeWithDefaults(savedProfile)
+      profileLoadedFromCookies = true
     }
+    profileLoaded = true
   })
   
-  // Save profile to cookies whenever it changes
-  $: if (userProfile) {
+  // Save profile to cookies whenever it changes (but only after initial load)
+  $: if (userProfile && profileLoaded) {
     saveProfile(userProfile)
   }
   

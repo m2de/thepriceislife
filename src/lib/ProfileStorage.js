@@ -14,7 +14,10 @@ export function saveProfile(profile) {
     const expiryDate = new Date()
     expiryDate.setDate(expiryDate.getDate() + COOKIE_EXPIRY_DAYS)
     
-    document.cookie = `${PROFILE_COOKIE_NAME}=${encodeURIComponent(profileData)}; expires=${expiryDate.toUTCString()}; path=/; SameSite=Strict`
+    // Use a more compatible cookie format for localhost development
+    const cookieString = `${PROFILE_COOKIE_NAME}=${encodeURIComponent(profileData)}; expires=${expiryDate.toUTCString()}; path=/`
+    document.cookie = cookieString
+    
     return true
   } catch (error) {
     console.warn('Failed to save profile to cookies:', error)
@@ -44,7 +47,7 @@ export function loadProfile() {
     
     // Validate profile structure
     if (!isValidProfile(profile)) {
-      console.warn('Invalid profile data in cookies, clearing...')
+      console.warn('Invalid profile data in cookies, clearing...', profile)
       clearProfile()
       return null
     }

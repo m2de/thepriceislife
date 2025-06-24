@@ -61,11 +61,14 @@
     const monthlyWakingHours = dailyWakingHours * 30.44
     const hourlyLifeValue = userProfile.monthlySalary / monthlyWakingHours
     
-    // Life expectancy calculations
-    const currentAge = 2025 - userProfile.birthYear
-    const lifeExpectancy = 81 // UK average
+    // Enhanced age calculations using birth date
+    const currentAge = calculateAge(userProfile.birthDate)
+    const lifeExpectancy = userProfile.lifeExpectancy || 81
     const remainingYears = Math.max(0, lifeExpectancy - currentAge)
     const remainingDays = remainingYears * 365.25
+    
+    // Enhanced: Calculate remaining waking days consistently
+    const remainingWakingDays = remainingYears * 365.25 * (dailyWakingHours / 24)
     
     let amount = scenario.amount
     let lifetimeCost = amount
@@ -86,14 +89,33 @@
     }
     
     const lifeCostHours = lifetimeCost / hourlyLifeValue
-    const lifeCostDays = lifeCostHours / dailyWakingHours
+    const lifeCostWakingDays = lifeCostHours / dailyWakingHours
     
     return {
       hours: lifeCostHours,
-      days: lifeCostDays,
+      days: lifeCostWakingDays, // Now using waking days consistently
       amount: lifetimeCost,
       isLifetime: scenario.isRecurring
     }
+  }
+  
+  // Age calculation function (same as in Calculator)
+  function calculateAge(birthDate) {
+    if (!birthDate) return 0
+    
+    const today = new Date()
+    const birth = new Date(birthDate)
+    
+    if (isNaN(birth.getTime())) return 0
+    
+    let age = today.getFullYear() - birth.getFullYear()
+    const monthDiff = today.getMonth() - birth.getMonth()
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--
+    }
+    
+    return Math.max(0, age)
   }
   
   function handleScenarioClick(scenario) {
