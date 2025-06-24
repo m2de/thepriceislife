@@ -5,6 +5,8 @@
   
   const dispatch = createEventDispatcher()
   
+  let calculatedScenarios = []
+  
   const scenarios = [
     {
       id: 'coffee',
@@ -108,6 +110,12 @@
     }
     return `£${scenario.amount} one-time`
   }
+  
+  // Reactive calculation of all scenarios
+  $: calculatedScenarios = scenarios.map(scenario => ({
+    ...scenario,
+    lifeCost: calculateScenarioLifeCost(scenario)
+  }))
 </script>
 
 <div class="scenarios-section">
@@ -115,8 +123,7 @@
   <p class="section-description">Click on any scenario to see how much life it really costs you</p>
   
   <div class="scenarios-grid">
-    {#each scenarios as scenario}
-      {@const lifeCost = calculateScenarioLifeCost(scenario)}
+    {#each calculatedScenarios as scenario}
       <div 
         class="scenario-card"
         role="button"
@@ -135,12 +142,12 @@
         
         <div class="scenario-impact">
           <div class="impact-stat">
-            <span class="impact-value">{formatNumber(lifeCost.days, 1)}</span>
+            <span class="impact-value">{formatNumber(scenario.lifeCost.days, 1)}</span>
             <span class="impact-label">days{scenario.isRecurring ? ' lifetime' : ''}</span>
           </div>
-          {#if lifeCost.days > 30}
+          {#if scenario.lifeCost.days > 30}
             <div class="impact-stat secondary">
-              <span class="impact-value">{formatNumber(lifeCost.days / 30.44, 1)}</span>
+              <span class="impact-value">{formatNumber(scenario.lifeCost.days / 30.44, 1)}</span>
               <span class="impact-label">months{scenario.isRecurring ? ' lifetime' : ''}</span>
             </div>
           {/if}
