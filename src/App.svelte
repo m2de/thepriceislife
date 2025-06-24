@@ -1,15 +1,24 @@
 <script>
+  import { onMount } from 'svelte'
   import Calculator from './lib/Calculator.svelte'
   import ScenarioPresets from './lib/ScenarioPresets.svelte'
+  import { loadProfile, saveProfile, getDefaultProfile, mergeWithDefaults } from './lib/ProfileStorage.js'
   
-  let userProfile = {
-    birthYear: 1990,
-    monthlySalary: 3000,
-    sleepHours: 8,
-    workingHours: 40
-  }
-  
+  let userProfile = getDefaultProfile()
   let calculatorRef
+  
+  // Load profile from cookies on mount
+  onMount(() => {
+    const savedProfile = loadProfile()
+    if (savedProfile) {
+      userProfile = mergeWithDefaults(savedProfile)
+    }
+  })
+  
+  // Save profile to cookies whenever it changes
+  $: if (userProfile) {
+    saveProfile(userProfile)
+  }
   
   function handleScenarioSelect(event) {
     if (calculatorRef) {

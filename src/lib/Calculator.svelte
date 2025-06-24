@@ -1,6 +1,9 @@
 <script>
   import LifeProgress from './LifeProgress.svelte'
   import PurchaseImpact from './PurchaseImpact.svelte'
+  import DateInput from './DateInput.svelte'
+  import LifeExpectancySlider from './LifeExpectancySlider.svelte'
+  import { clearProfile, getDefaultProfile } from './ProfileStorage.js'
   
   export let userProfile
   
@@ -11,16 +14,59 @@
   let result = null
   let showResult = false
   
+  // Create DateInput reference to access calculation functions
+  let dateInputRef
+  
+  // Age calculation functions
+  function calculateAge(birthDate) {
+    if (!birthDate) return 0
+    
+    const today = new Date()
+    const birth = new Date(birthDate)
+    
+    if (isNaN(birth.getTime())) return 0
+    
+    let age = today.getFullYear() - birth.getFullYear()
+    const monthDiff = today.getMonth() - birth.getMonth()
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--
+    }
+    
+    return Math.max(0, age)
+  }
+  
+  function calculateAgeInDays(birthDate) {
+    if (!birthDate) return 0
+    
+    const today = new Date()
+    const birth = new Date(birthDate)
+    
+    if (isNaN(birth.getTime())) return 0
+    
+    const diffTime = today.getTime() - birth.getTime()
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    
+    return Math.max(0, diffDays)
+  }
+  
   // Reactive calculations
   $: dailyWakingHours = 24 - userProfile.sleepHours
   $: monthlyWakingHours = dailyWakingHours * 30.44
   $: hourlyLifeValue = userProfile.monthlySalary / monthlyWakingHours
   
-  // Life expectancy calculations
-  $: currentAge = 2025 - userProfile.birthYear
-  $: lifeExpectancy = 81 // UK average, could be configurable later
+  // Enhanced age calculations using birth date
+  $: currentAge = calculateAge(userProfile.birthDate)
+  $: ageInDays = calculateAgeInDays(userProfile.birthDate)
+  
+  // Life expectancy calculations (now customizable)
+  $: lifeExpectancy = userProfile.lifeExpectancy || 81
   $: remainingYears = Math.max(0, lifeExpectancy - currentAge)
   $: remainingDays = remainingYears * 365.25
+  
+  // Enhanced: Calculate remaining waking days consistently
+  $: remainingWakingDays = remainingYears * 365.25 * (dailyWakingHours / 24)
+  
   $: lifeCompletionPercentage = Math.min(100, (currentAge / lifeExpectancy) * 100)
   
   // Reactive recalculation when profile changes
@@ -54,20 +100,24 @@
     
     const lifeCostHours = lifetimeCost / hourlyLifeValue
     const lifeCostDays = lifeCostHours / dailyWakingHours
-    const lifeCostWeeks = lifeCostDays / 7
-    const lifeCostMonths = lifeCostDays / 30.44
     
-    // Calculate percentage of remaining life
-    const remainingLifePercentage = remainingDays > 0 ? (lifeCostDays / remainingDays) * 100 : 0
+    // Enhanced: Calculate in terms of waking days for consistency
+    const lifeCostWakingDays = lifeCostHours / dailyWakingHours
+    const lifeCostWeeks = lifeCostWakingDays / 7
+    const lifeCostMonths = lifeCostWakingDays / 30.44
+    
+    // Calculate percentage of remaining waking life (more accurate)
+    const remainingWakingLifePercentage = remainingWakingDays > 0 ? (lifeCostWakingDays / remainingWakingDays) * 100 : 0
     
     result = {
       amount,
       lifetimeCost,
       hours: lifeCostHours,
       days: lifeCostDays,
+      wakingDays: lifeCostWakingDays, // New: waking days calculation
       weeks: lifeCostWeeks,
       months: lifeCostMonths,
-      remainingLifePercentage,
+      remainingLifePercentage: remainingWakingLifePercentage, // Now based on waking hours
       isRecurring,
       recurringPeriod
     }
@@ -82,28 +132,28 @@
   function getResultMessage() {
     if (!result) return ''
     
-    const days = formatNumber(result.days, 1)
+    const wakingDays = formatNumber(result.wakingDays, 1)
     const hours = formatNumber(result.hours, 0)
     const percentage = formatNumber(result.remainingLifePercentage, 1)
     const remainingYearsText = remainingYears > 0 ? remainingYears : "remaining"
     
     if (result.isRecurring) {
       const lifetimeMessages = [
-        `This habit will devour ${days} days of your remaining ${remainingYearsText} years`,
-        `Over your remaining lifetime, this costs ${days} days of existence`,
-        `You're trading ${percentage}% of your remaining life for this subscription`,
-        `This recurring expense will consume ${days} days of what's left`,
-        `${percentage}% of your remaining existence will be spent on this habit`
+        `This habit will devour ${wakingDays} waking days of your remaining ${remainingYearsText} years`,
+        `Over your remaining lifetime, this costs ${wakingDays} conscious days of existence`,
+        `You're trading ${percentage}% of your remaining waking life for this subscription`,
+        `This recurring expense will consume ${wakingDays} days of conscious time that's left`,
+        `${percentage}% of your remaining conscious existence will be spent on this habit`
       ]
       return lifetimeMessages[Math.floor(Math.random() * lifetimeMessages.length)]
     }
     
     const oneTimeMessages = [
-      `This will devour ${days} days of your remaining ${remainingYearsText} years`,
-      `You're sacrificing ${percentage}% of your remaining life for this purchase`,
-      `This costs ${days} days of your precious remaining time`,
-      `${percentage}% of what's left of your existence for this item`,
-      `This brings your death ${days} days closer`
+      `This will devour ${wakingDays} waking days of your remaining ${remainingYearsText} years`,
+      `You're sacrificing ${percentage}% of your remaining conscious life for this purchase`,
+      `This costs ${wakingDays} days of your precious remaining waking time`,
+      `${percentage}% of what's left of your conscious existence for this item`,
+      `This brings your conscious death ${wakingDays} waking days closer`
     ]
     
     return oneTimeMessages[Math.floor(Math.random() * oneTimeMessages.length)]
@@ -124,20 +174,42 @@
   
   // Preset salary buttons
   const salaryPresets = [2000, 3000, 4000, 5000]
+  
+  // Clear profile function
+  function handleClearProfile() {
+    if (confirm('Are you sure you want to clear your saved profile? This will reset all your information.')) {
+      clearProfile()
+      userProfile = getDefaultProfile()
+      showResult = false
+      result = null
+    }
+  }
 </script>
 
 <div class="calculator">
   <!-- User Profile Form -->
   <div class="profile-section">
-    <h2>Your Life Profile</h2>
+    <div class="profile-header">
+      <h2>Your Life Profile</h2>
+      <button class="clear-profile-btn" on:click={handleClearProfile} title="Clear saved profile">
+        🗑️ Reset
+      </button>
+    </div>
     <div class="form-grid">
       <div class="form-group">
-        <label for="birthYear">Birth Year</label>
-        <select id="birthYear" bind:value={userProfile.birthYear}>
-          {#each Array.from({length: 61}, (_, i) => 2010 - i) as year}
-            <option value={year}>{year}</option>
-          {/each}
-        </select>
+        <DateInput 
+          bind:this={dateInputRef}
+          bind:value={userProfile.birthDate}
+          label="Birth Date"
+          required
+        />
+      </div>
+      
+      <div class="form-group">
+        <LifeExpectancySlider 
+          bind:value={userProfile.lifeExpectancy}
+          label="Life Expectancy"
+        />
       </div>
       
       <div class="form-group">
@@ -196,7 +268,9 @@
     {currentAge}
     {remainingYears}
     {remainingDays}
+    {remainingWakingDays}
     {lifeCompletionPercentage}
+    {ageInDays}
   />
   
   <!-- Calculator Interface -->
@@ -246,8 +320,8 @@
         
         <div class="result-details">
           <div class="stat">
-            <span class="stat-value">{formatNumber(result.days, 1)}</span>
-            <span class="stat-label">Days</span>
+            <span class="stat-value">{formatNumber(result.wakingDays, 1)}</span>
+            <span class="stat-label">Waking Days</span>
           </div>
           <div class="stat">
             <span class="stat-value">{formatNumber(result.hours, 0)}</span>
@@ -256,7 +330,13 @@
           {#if result.weeks > 1}
             <div class="stat">
               <span class="stat-value">{formatNumber(result.weeks, 1)}</span>
-              <span class="stat-label">Weeks</span>
+              <span class="stat-label">Waking Weeks</span>
+            </div>
+          {/if}
+          {#if result.wakingDays !== result.days}
+            <div class="stat secondary">
+              <span class="stat-value">{formatNumber(result.days, 1)}</span>
+              <span class="stat-label">Total Days</span>
             </div>
           {/if}
         </div>
@@ -294,6 +374,37 @@
     color: #fff;
     font-size: 1.5rem;
     font-weight: 600;
+  }
+  
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .profile-header h2 {
+    margin: 0;
+  }
+  
+  .clear-profile-btn {
+    padding: 0.5rem 1rem;
+    background: #333;
+    color: #888;
+    border: 1px solid #444;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .clear-profile-btn:hover {
+    background: #444;
+    color: #ff6b6b;
+    border-color: #ff6b6b;
   }
   
   .form-grid {
@@ -450,6 +561,19 @@
     flex-direction: column;
     align-items: center;
     gap: 0.2rem;
+  }
+  
+  .stat.secondary {
+    opacity: 0.7;
+  }
+  
+  .stat.secondary .stat-value {
+    color: #888;
+    font-size: 1.5rem;
+  }
+  
+  .stat.secondary .stat-label {
+    color: #666;
   }
   
   .stat-value {

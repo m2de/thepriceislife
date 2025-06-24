@@ -2,7 +2,9 @@
   export let currentAge
   export let remainingYears
   export let remainingDays
+  export let remainingWakingDays = null // New: waking days remaining
   export let lifeCompletionPercentage
+  export let ageInDays = null // New: precise age in days
   
   function formatNumber(num, decimals = 0) {
     return num.toFixed(decimals)
@@ -19,6 +21,15 @@
     if (lifeCompletionPercentage < 60) return 'Mid Life'
     return 'Later Life'
   }
+  
+  // Get emoji based on life stage
+  function getLifeStageEmoji() {
+    if (lifeCompletionPercentage < 20) return '👶'  // baby
+    if (lifeCompletionPercentage < 40) return '🧒'  // child
+    if (lifeCompletionPercentage < 65) return '👨'  // adult
+    if (lifeCompletionPercentage < 85) return '👴'  // older adult
+    return '💀' // end of life
+  }
 </script>
 
 <div class="life-progress-section">
@@ -26,16 +37,28 @@
   
   <div class="life-stats">
     <div class="age-info">
-      <span class="current-age">{currentAge} years old</span>
+      <div class="age-display">
+        <span class="life-emoji">{getLifeStageEmoji()}</span>
+        <div class="age-text">
+          <span class="current-age">{currentAge} years old</span>
+          {#if ageInDays}
+            <span class="precise-age">({Number(ageInDays).toLocaleString()} days lived)</span>
+          {/if}
+        </div>
+      </div>
       <span class="life-stage" style="color: {getLifeStageColor()}">{getLifeStageText()}</span>
     </div>
     
     <div class="progress-container">
-      <div class="progress-bar">
-        <div 
-          class="progress-fill" 
-          style="width: {lifeCompletionPercentage}%; background: linear-gradient(90deg, #4ade80 0%, #fbbf24 50%, #ef4444 100%)"
-        ></div>
+      <div class="emoji-progress-bar">
+        <span class="birth-emoji">👶</span>
+        <div class="progress-bar">
+          <div 
+            class="progress-fill" 
+            style="width: {lifeCompletionPercentage}%; background: linear-gradient(90deg, #4ade80 0%, #fbbf24 50%, #ef4444 100%)"
+          ></div>
+        </div>
+        <span class="death-emoji">💀</span>
       </div>
       <div class="progress-label">
         <span>{formatNumber(lifeCompletionPercentage, 1)}% complete</span>
@@ -51,6 +74,12 @@
         <span class="stat-value">{formatNumber(remainingDays, 0)}</span>
         <span class="stat-label">days left</span>
       </div>
+      {#if remainingWakingDays && remainingWakingDays !== remainingDays}
+        <div class="remaining-stat waking-days">
+          <span class="stat-value">{formatNumber(remainingWakingDays, 0)}</span>
+          <span class="stat-label">conscious days left</span>
+        </div>
+      {/if}
     </div>
   </div>
   
@@ -92,12 +121,56 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    margin-bottom: 0.5rem;
+  }
+  
+  .age-display {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .life-emoji {
+    font-size: 2rem;
+    line-height: 1;
+  }
+  
+  .age-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
   
   .current-age {
     font-size: 1.4rem;
     font-weight: 700;
     color: #fff;
+  }
+  
+  .precise-age {
+    font-size: 0.85rem;
+    color: #888;
+    font-weight: 400;
+  }
+  
+  .emoji-progress-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .birth-emoji, .death-emoji {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+  
+  .birth-emoji {
+    opacity: 0.8;
+  }
+  
+  .death-emoji {
+    opacity: 0.6;
   }
   
   .life-stage {
@@ -176,6 +249,14 @@
     text-align: center;
   }
   
+  .waking-days .stat-value {
+    color: #06b6d4;
+  }
+  
+  .waking-days .stat-label {
+    color: #67e8f9;
+  }
+  
   .life-warning {
     margin-top: 1rem;
     padding: 1rem;
@@ -201,6 +282,22 @@
       flex-direction: column;
       gap: 0.5rem;
       text-align: center;
+    }
+    
+    .age-display {
+      justify-content: center;
+    }
+    
+    .life-emoji {
+      font-size: 1.75rem;
+    }
+    
+    .emoji-progress-bar {
+      gap: 0.5rem;
+    }
+    
+    .birth-emoji, .death-emoji {
+      font-size: 1.25rem;
     }
     
     .remaining-info {
