@@ -133,11 +133,26 @@
     return `£${scenario.amount} one-time`
   }
   
-  // Reactive calculation of all scenarios
-  $: calculatedScenarios = scenarios.map(scenario => ({
-    ...scenario,
-    lifeCost: calculateScenarioLifeCost(scenario)
-  }))
+  // Reactive calculation of all scenarios - watch for specific property changes
+  $: birthDate = userProfile?.birthDate
+  $: sleepHours = userProfile?.sleepHours  
+  $: monthlySalary = userProfile?.monthlySalary
+  $: lifeExpectancy = userProfile?.lifeExpectancy
+  
+  // Recalculate scenarios when any profile property changes
+  $: calculatedScenarios = scenarios.map(scenario => {
+    if (!userProfile || !birthDate || !monthlySalary) {
+      return {
+        ...scenario,
+        lifeCost: { days: 0, hours: 0, amount: 0, isLifetime: scenario.isRecurring }
+      }
+    }
+    
+    return {
+      ...scenario,
+      lifeCost: calculateScenarioLifeCost(scenario)
+    }
+  })
 </script>
 
 <div class="scenarios-section">
@@ -181,7 +196,7 @@
   </div>
   
   <div class="scenarios-footer">
-    <p>Based on your current life profile: £{userProfile.monthlySalary}/month, {userProfile.sleepHours}h sleep</p>
+    <p>Based on your current life profile: £{monthlySalary || 0}/month, {sleepHours || 8}h sleep, age {birthDate ? calculateAge(birthDate) : 0}</p>
   </div>
 </div>
 

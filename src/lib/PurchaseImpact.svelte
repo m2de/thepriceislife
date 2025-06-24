@@ -15,7 +15,11 @@
   }
   
   function getImpactIntensity(percentage) {
-    return Math.min(100, percentage * 2) // Double the visual intensity for better visibility
+    // Ensure minimum visibility for very small percentages, but keep it proportional
+    if (percentage < 2) {
+      return Math.max(2, percentage) // Minimum 2% width for visibility
+    }
+    return Math.min(100, percentage)
   }
 </script>
 
