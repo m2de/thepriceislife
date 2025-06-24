@@ -1,4 +1,7 @@
 <script>
+  import LifeProgress from './LifeProgress.svelte'
+  import PurchaseImpact from './PurchaseImpact.svelte'
+  
   export let userProfile
   
   let purchaseAmount = ''
@@ -13,37 +16,58 @@
   $: monthlyWakingHours = dailyWakingHours * 30.44
   $: hourlyLifeValue = userProfile.monthlySalary / monthlyWakingHours
   
+  // Life expectancy calculations
+  $: currentAge = 2025 - userProfile.birthYear
+  $: lifeExpectancy = 81 // UK average, could be configurable later
+  $: remainingYears = Math.max(0, lifeExpectancy - currentAge)
+  $: remainingDays = remainingYears * 365.25
+  $: lifeCompletionPercentage = Math.min(100, (currentAge / lifeExpectancy) * 100)
+  
+  // Reactive recalculation when profile changes
+  $: if (showResult && purchaseAmount && parseFloat(purchaseAmount) > 0) {
+    calculateLifeCost()
+  }
+  
+  // Reactive message update
+  $: resultMessage = result ? getResultMessage() : ''
+  
   function calculateLifeCost() {
     if (!purchaseAmount || parseFloat(purchaseAmount) <= 0) return
     
     let amount = parseFloat(purchaseAmount)
+    let lifetimeCost = amount
     
-    // Convert to annual cost if recurring
-    if (isRecurring) {
+    // For recurring expenses, calculate lifetime cost based on remaining years
+    if (isRecurring && remainingYears > 0) {
       switch (recurringPeriod) {
         case 'daily':
-          amount = amount * 365.25
+          lifetimeCost = amount * remainingDays
           break
         case 'monthly':
-          amount = amount * 12
+          lifetimeCost = amount * remainingYears * 12
           break
         case 'yearly':
-          // already yearly
+          lifetimeCost = amount * remainingYears
           break
       }
     }
     
-    const lifeCostHours = amount / hourlyLifeValue
+    const lifeCostHours = lifetimeCost / hourlyLifeValue
     const lifeCostDays = lifeCostHours / dailyWakingHours
     const lifeCostWeeks = lifeCostDays / 7
     const lifeCostMonths = lifeCostDays / 30.44
     
+    // Calculate percentage of remaining life
+    const remainingLifePercentage = remainingDays > 0 ? (lifeCostDays / remainingDays) * 100 : 0
+    
     result = {
       amount,
+      lifetimeCost,
       hours: lifeCostHours,
       days: lifeCostDays,
       weeks: lifeCostWeeks,
       months: lifeCostMonths,
+      remainingLifePercentage,
       isRecurring,
       recurringPeriod
     }
@@ -60,31 +84,33 @@
     
     const days = formatNumber(result.days, 1)
     const hours = formatNumber(result.hours, 0)
-    
-    const messages = [
-      `This will devour ${hours} hours of your mortal existence`,
-      `You're sacrificing ${days} days of life for this purchase`,
-      `This brings your death ${days} days closer`,
-      `This costs you ${days} days of precious life`,
-      `Your remaining time shrinks by ${days} days`
-    ]
+    const percentage = formatNumber(result.remainingLifePercentage, 1)
+    const remainingYearsText = remainingYears > 0 ? remainingYears : "remaining"
     
     if (result.isRecurring) {
-      const recurringMessages = [
-        `This habit steals ${days} days of life annually`,
-        `Your addiction devours ${days} days of existence yearly`,
-        `This recurring expense costs ${days} days of your remaining time each year`,
-        `Annually, this drains ${days} days from your mortal coil`
+      const lifetimeMessages = [
+        `This habit will devour ${days} days of your remaining ${remainingYearsText} years`,
+        `Over your remaining lifetime, this costs ${days} days of existence`,
+        `You're trading ${percentage}% of your remaining life for this subscription`,
+        `This recurring expense will consume ${days} days of what's left`,
+        `${percentage}% of your remaining existence will be spent on this habit`
       ]
-      return recurringMessages[Math.floor(Math.random() * recurringMessages.length)]
+      return lifetimeMessages[Math.floor(Math.random() * lifetimeMessages.length)]
     }
     
-    return messages[Math.floor(Math.random() * messages.length)]
+    const oneTimeMessages = [
+      `This will devour ${days} days of your remaining ${remainingYearsText} years`,
+      `You're sacrificing ${percentage}% of your remaining life for this purchase`,
+      `This costs ${days} days of your precious remaining time`,
+      `${percentage}% of what's left of your existence for this item`,
+      `This brings your death ${days} days closer`
+    ]
+    
+    return oneTimeMessages[Math.floor(Math.random() * oneTimeMessages.length)]
   }
   
   function copyToClipboard() {
-    const message = getResultMessage()
-    navigator.clipboard.writeText(message).then(() => {
+    navigator.clipboard.writeText(resultMessage).then(() => {
       // Could add a toast notification here
     })
   }
@@ -165,6 +191,14 @@
     </div>
   </div>
   
+  <!-- Life Progress Overview -->
+  <LifeProgress 
+    {currentAge}
+    {remainingYears}
+    {remainingDays}
+    {lifeCompletionPercentage}
+  />
+  
   <!-- Calculator Interface -->
   <div class="calculator-section">
     <h2>Calculate Life Cost</h2>
@@ -208,7 +242,7 @@
     <div class="result-section">
       <div class="result-card">
         <h3>The Verdict</h3>
-        <p class="result-message">{getResultMessage()}</p>
+        <p class="result-message">{resultMessage}</p>
         
         <div class="result-details">
           <div class="stat">
@@ -230,6 +264,12 @@
         <button class="copy-btn" on:click={copyToClipboard}>
           Copy to Share
         </button>
+        
+        <PurchaseImpact 
+          {result}
+          {remainingDays}
+          {remainingYears}
+        />
       </div>
     </div>
   {/if}

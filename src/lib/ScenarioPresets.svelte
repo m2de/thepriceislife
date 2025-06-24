@@ -59,30 +59,38 @@
     const monthlyWakingHours = dailyWakingHours * 30.44
     const hourlyLifeValue = userProfile.monthlySalary / monthlyWakingHours
     
-    let amount = scenario.amount
+    // Life expectancy calculations
+    const currentAge = 2025 - userProfile.birthYear
+    const lifeExpectancy = 81 // UK average
+    const remainingYears = Math.max(0, lifeExpectancy - currentAge)
+    const remainingDays = remainingYears * 365.25
     
-    // Convert to annual cost if recurring
-    if (scenario.isRecurring) {
+    let amount = scenario.amount
+    let lifetimeCost = amount
+    
+    // For recurring expenses, calculate lifetime cost based on remaining years
+    if (scenario.isRecurring && remainingYears > 0) {
       switch (scenario.period) {
         case 'daily':
-          amount = amount * 365.25
+          lifetimeCost = amount * remainingDays
           break
         case 'monthly':
-          amount = amount * 12
+          lifetimeCost = amount * remainingYears * 12
           break
         case 'yearly':
-          // already yearly
+          lifetimeCost = amount * remainingYears
           break
       }
     }
     
-    const lifeCostHours = amount / hourlyLifeValue
+    const lifeCostHours = lifetimeCost / hourlyLifeValue
     const lifeCostDays = lifeCostHours / dailyWakingHours
     
     return {
       hours: lifeCostHours,
       days: lifeCostDays,
-      amount: amount
+      amount: lifetimeCost,
+      isLifetime: scenario.isRecurring
     }
   }
   
@@ -128,12 +136,12 @@
         <div class="scenario-impact">
           <div class="impact-stat">
             <span class="impact-value">{formatNumber(lifeCost.days, 1)}</span>
-            <span class="impact-label">days{scenario.isRecurring ? '/year' : ''}</span>
+            <span class="impact-label">days{scenario.isRecurring ? ' lifetime' : ''}</span>
           </div>
           {#if lifeCost.days > 30}
             <div class="impact-stat secondary">
               <span class="impact-value">{formatNumber(lifeCost.days / 30.44, 1)}</span>
-              <span class="impact-label">months{scenario.isRecurring ? '/year' : ''}</span>
+              <span class="impact-label">months{scenario.isRecurring ? ' lifetime' : ''}</span>
             </div>
           {/if}
         </div>
