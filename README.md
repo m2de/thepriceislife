@@ -4,11 +4,11 @@ A morbidly fascinating web application that converts monetary costs into "life t
 
 ## 🎯 What It Does
 
-Transform spending decisions by showing their true cost: **how much you need to work**.
+Transform spending decisions by showing their true cost: **how much of your remaining life**.
 
-- **£500 camera** → "You need to work 29 hours to afford this - 1.2 waking days of your life"
-- **Daily £3 coffee** → "This habit will cost you 547 hours of work - 22.8 waking days of your life"
-- **Netflix subscription** → "You'll work 11 hours to pay for this subscription each year"
+- **£500 camera** → "This purchase will consume 1.2 days of your remaining life"
+- **Daily £3 coffee** → "This habit will devour 22.8 days of your remaining life"
+- **Netflix subscription** → "This addiction steals 0.7% of what's left of your life"
 
 ## ✨ Features
 

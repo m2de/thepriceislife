@@ -42,11 +42,11 @@ const lifeDaysNeeded = workHoursNeeded / dailyWakingHours;
 
 ## Sample Messaging
 
-- "You need to work X hours to afford this - X.X waking days of your life"
-- "This costs X hours of work - X.X days of your precious time"
-- "You'll work X hours to pay for this subscription"
-- "Over your remaining lifetime, you'll work X hours to pay for this"
-- "This habit will cost you X hours of work - X.X waking days of your life"
+- "This purchase will consume X.X days of your remaining life"
+- "You're trading X% of your time left on Earth for this"
+- "This habit will devour X.X days of your remaining life"
+- "X.X fewer days to exist, just for this item"
+- "Your remaining X years just got X% shorter for this habit"
 
 ## Technical Preferences
 

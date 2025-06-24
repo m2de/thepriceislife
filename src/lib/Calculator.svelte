@@ -147,21 +147,21 @@
     
     if (result.isRecurring) {
       const lifetimeMessages = [
-        `This habit will cost you ${workHours} hours of work - ${wakingDays} waking days of your life`,
-        `Over your remaining lifetime, you'll work ${workHours} hours to pay for this`,
-        `You're trading ${percentage}% of your remaining waking life to earn money for this subscription`,
-        `This recurring expense requires ${wakingDays} days of your conscious time to earn`,
-        `${percentage}% of your remaining existence will be spent working to afford this habit`
+        `This habit will devour ${wakingDays} days of your remaining life`,
+        `You'll sacrifice ${workHours} hours of your precious existence for this subscription`,
+        `This addiction steals ${percentage}% of what's left of your life`,
+        `${wakingDays} fewer days to live, all for this recurring expense`,
+        `Your remaining ${remainingYears} years just got ${percentage}% shorter for this habit`
       ]
       return lifetimeMessages[Math.floor(Math.random() * lifetimeMessages.length)]
     }
     
     const oneTimeMessages = [
-      `You need to work ${workHours} hours to afford this - ${wakingDays} waking days of your life`,
-      `You're sacrificing ${percentage}% of your remaining life's earning power for this purchase`,
-      `This costs ${workHours} hours of work - ${wakingDays} days of your precious time`,
-      `${percentage}% of what's left of your earning potential for this item`,
-      `You'll spend ${wakingDays} waking days of life earning enough for this`
+      `This purchase will consume ${wakingDays} days of your remaining life`,
+      `You're trading ${percentage}% of your time left on Earth for this`,
+      `${wakingDays} fewer days to exist, just for this item`,
+      `This costs ${workHours} hours of your finite existence`,
+      `You'll spend ${wakingDays} days of what's left of your life earning this`
     ]
     
     return oneTimeMessages[Math.floor(Math.random() * oneTimeMessages.length)]
